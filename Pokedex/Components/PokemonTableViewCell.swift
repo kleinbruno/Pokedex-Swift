@@ -20,7 +20,7 @@ class PokemonTableViewCell: UITableViewCell{
         // carregar imagem do pokemon
         pictureImageView.loadImage(from: model.image)
         nameLabel.text = model.name
-        idLabel.text = model.id
+        idLabel.text = String(format: "#%03d", Int(model.id) ?? 0)
         primaryTypeImageView.image = model.types.first?.icon
         primaryTypeImageView.backgroundColor = model.types.first?.color
         

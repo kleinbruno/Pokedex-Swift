@@ -13,7 +13,7 @@ struct PokemonList: Codable {
 }
 
 struct Pokemon: Codable {
-    let id: String
+    var id: String
     let name: String
     let image: String
     let types: [PokemonType]
