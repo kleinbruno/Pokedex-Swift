@@ -23,6 +23,7 @@ import UIKit
         
         override func viewDidLoad() {
             super.viewDidLoad()
+            view.accessibilityIdentifier = "detailView"
             
             self.initialConfig()
             
