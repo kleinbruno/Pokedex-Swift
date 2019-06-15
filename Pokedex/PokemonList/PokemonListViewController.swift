@@ -8,10 +8,6 @@
 
 import UIKit
 
-protocol PokemonListViewType: AnyObject {
-    func reloadData()
-}
-
 class PokemonListViewController: UIViewController {
 
     @IBOutlet weak var activityIndicatorView: UIView!
@@ -42,12 +38,53 @@ extension PokemonListViewController: UITableViewDelegate {
             self.navigationController?.present(detailViewController, animated: true)
         }
     }
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        
+        let actionType = self.presenter.swipeAction(for: indexPath.row)
+        
+        let contextualAction = UIContextualAction(style: .normal, title: actionType.text) { (action, view, handler) in
+            
+            self.presenter.swipe(at: indexPath.row)
+            
+            handler(true)
+        }
+        
+        contextualAction.backgroundColor = .purple
+        
+        let configuration = UISwipeActionsConfiguration(actions: [contextualAction])
+        
+        return configuration
+    }
+    
 }
 
 extension PokemonListViewController: PokemonListViewType {
     func reloadData() {
         self.activityIndicatorView.isHidden = true
         self.tableView.reloadData()
+    }
+}
+
+enum PokemonSwipeAction {
+    case addFavorite, removeFavorite
+    
+    var text: String {
+        switch self {
+        case .addFavorite:
+            return "Adicionar"
+        case .removeFavorite:
+            return "Remover"
+        }
+    }
+    
+    var color: UIColor {
+        switch self {
+        case .addFavorite:
+            return .green
+        case .removeFavorite:
+            return .red
+        }
     }
 }
 

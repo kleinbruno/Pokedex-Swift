@@ -10,11 +10,53 @@ import UIKit
 
 class PokemonListPresenter: NSObject {
     weak var view: PokemonListViewType?
+    private lazy var interactor: PokemonListInteractorInput = PokemonListInteractor(output: self)
     private var pokemonList = [Pokemon]()
-    private let requestMaker = RequestMaker()
+    private let idsKey = "favorites.ids"
+    
+    override init() {
+        super.init()
+        
+        if let data = UserDefaults.standard.array(forKey: idsKey) as? [String] {
+            self.favoritesIds = Set(data)
+        } else {
+            self.favoritesIds = []
+        }
+    }
+    
+    var favoritesIds = Set<String>() {
+        didSet {
+            print(self.favoritesIds)
+            UserDefaults.standard.set(Array(favoritesIds), forKey: idsKey)
+        }
+    }
+}
+
+extension PokemonListPresenter {
+    
+    func fetchData() {
+        interactor.fetchData()
+    }
     
     func pokemon(at index: Int) -> Pokemon {
         return pokemonList[index]
+    }
+    
+    func swipe(at index: Int) {
+        let pokemonId = pokemon(at: index).id
+        
+        guard self.favoritesIds.contains(pokemonId) else {
+            self.favoritesIds.insert(pokemonId)
+            return
+        }
+        
+        self.favoritesIds.remove(pokemonId)
+    }
+    
+    func swipeAction(for index: Int) -> PokemonSwipeAction {
+        return self.favoritesIds.contains(pokemon(at: index).id) ?
+            .removeFavorite :
+            .addFavorite
     }
 }
 
@@ -34,22 +76,12 @@ extension PokemonListPresenter: UITableViewDataSource {
     }
 }
 
-extension PokemonListPresenter {
-    
-    func fetchData() {
-        requestMaker.make(withEndpoint: .list) {
-            (pokemonList: PokemonList) in
-            self.pokemonList = pokemonList.pokemons
-            DispatchQueue.main.async {
-                self.view?.reloadData()
-            }
-            
-        }
+extension PokemonListPresenter: PokemonListInteractorOutput {
+    func dataFetched(_ data: PokemonList) {
+        self.pokemonList = data.pokemons
         
-        //        requestMaker.make(withEndpoint: .details(query: "1")) {
-        //            (pokemonList: Pokemon) in
-        //            self.pokemonList = pokemonList.pokemons
-        //        }
+        DispatchQueue.main.async {
+            self.view?.reloadData()
+        }
     }
-    
 }
